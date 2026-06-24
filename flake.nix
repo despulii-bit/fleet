@@ -14,7 +14,6 @@
         modules = [
           ./shared/default.nix          # Loads your base configuration (SSH, Firewall, Keys)
           ./hosts/attic/configuration.nix # Loads host-specific hardware/settings
-          ./hosts/attic/atticd.nix        # Loads your attic binary cache service
         ];
       };
       "k3s-control-01" = nixpkgs.lib.nixosSystem {
@@ -37,7 +36,6 @@
         imports = [
           ./shared/default.nix
           ./hosts/attic/configuration.nix
-          ./hosts/attic/atticd.nix
         ];
       };
       "k3s-control-01" = { ... }: {

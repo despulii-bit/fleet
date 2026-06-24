@@ -1,7 +1,6 @@
 { pkgs, modulesPath, lib, config, ... }: {
 
   imports = [
-    ../../shared # Pulls in your shared SSH keys, Nix features, and packages
     (modulesPath + "/profiles/qemu-guest.nix")
   ];
 
