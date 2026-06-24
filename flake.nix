@@ -1,49 +1,33 @@
 {
-  description = "NixOS VM deployment flake using deploy-rs";
+  description = "Cluster Fleet Infrastructure Repository";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-
-    deploy-rs = {
-      url = "github:serokell/deploy-rs";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    colmena.url = "github:zhaofengli/colmena";
   };
 
-  outputs = { self, nixpkgs, deploy-rs, ... }@inputs:
-    let
-      system = "x86_64-linux"; # Matches your Vivobook architecture
-      pkgs = import nixpkgs { inherit system; };
-    in {
-
-      # 1. Define your NixOS system configuration
-      nixosConfigurations = {
-        k3s-control-1 = nixpkgs.lib.nixosSystem {
-          inherit system;
-          modules = [ ./hosts/k3s-control-1/configuration.nix ];
-        };
+  outputs = { self, nixpkgs, colmena, ... }@inputs: {
+    # 1. Standard NixOS configurations (Used by your initial systemd bootstrap script)
+    nixosConfigurations = {
+      attic = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [ ./hosts/attic/configuration.nix ];
       };
-
-      # 2. Define the deployment configuration for deploy-rs
-      deploy.nodes = {
-        k3s-control-1 = {
-          hostname = "k3s-control-1.tailb85ceb.ts.net";
-          fastConnection = true;
-
-          profiles.system = {
-            sshUser = "deploy";
-            path = deploy-rs.lib.${system}.activate.nixos self.nixosConfigurations.k3s-control-1;
-            user = "root";
-          };
-
-        };
+      "k3s-control-01" = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [ ./hosts/k3s/configuration.nix ];
       };
-
-      # 3. Dedicated development shell for running deployments
-      devShells.${system}.default = import ./shell.nix {
-        inherit pkgs deploy-rs system;
-      };
-      # Allows you to run `nix flake check` to validate everything
-      checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) deploy-rs.lib;
     };
+
+    # 2. Colmena deployment map (Used by your local cron/timer agents for pull deployments)
+    colmena = {
+      meta = {
+        nixpkgs = import nixpkgs { system = "x86_64-linux"; };
+      };
+
+      # Inherit the host configuration modules directly
+      attic = { ... }: { imports = [ ./hosts/attic/configuration.nix ]; };
+      "k3s-control-01" = { ... }: { imports = [ ./hosts/k3s/configuration.nix ]; };
+    };
+  };
 }
