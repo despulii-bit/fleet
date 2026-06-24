@@ -1,8 +1,5 @@
 { pkgs, config, ... }: {
 
-  # Ensure the colmena package configuration is visible to the path declaration
-  services.colmena.enable = true;
-
   # ========================================================================
   # Continuous Deployment (Colmena Pull Engine)
   # ========================================================================
