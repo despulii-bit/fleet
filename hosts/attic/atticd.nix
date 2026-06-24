@@ -33,10 +33,20 @@
   };
 
   # ========================================================================
+  # Systemd Integration Upgrades
+  # ========================================================================
+  systemd.services.atticd = {
+    # 1. Force the service to target multi-user.target so it enables on first boot
+    wantedBy = [ "multi-user.target" ];
+
+    # 2. Add an explicit dependency mapping to prevent race conditions during bootstrap
+    wants = [ "network-online.target" ];
+    after = [ "network-online.target" ];
+  };
+
+  # ========================================================================
   # System Activation Bootstrapping
   # ========================================================================
-  # This executes safely during the build phase, guaranteeing the file exists
-  # before systemd reads 'environmentFile', preventing any resource crashes.
   system.activationScripts.atticd-secrets-bootstrap = {
     text = ''
       mkdir -p /var/lib/atticd
