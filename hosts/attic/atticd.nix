@@ -6,10 +6,7 @@
   services.atticd = {
     enable = true;
 
-    systemd.services.atticd.wantedBy = [ "multi-user.target" ];
-
-    # ADD THIS BACK: It satisfies the module's compiler assertion check.
-    # The activation script below guarantees this path is populated.
+    # Explicitly pass the path to satisfy the NixOS module assertion check
     environmentFile = "/var/lib/atticd/credentials";
 
     settings = {
@@ -38,8 +35,8 @@
   # ========================================================================
   # System Activation Bootstrapping
   # ========================================================================
-  # Runs DURING 'nixos-rebuild switch' before systemd loads the service,
-  # preventing the "Failed to load environmentFile" systemd resource crash.
+  # This executes safely during the build phase, guaranteeing the file exists
+  # before systemd reads 'environmentFile', preventing any resource crashes.
   system.activationScripts.atticd-secrets-bootstrap = {
     text = ''
       mkdir -p /var/lib/atticd
