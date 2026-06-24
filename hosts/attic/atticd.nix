@@ -6,8 +6,9 @@
   services.atticd = {
     enable = true;
 
-    # REMOVED: environmentFile = "/var/lib/atticd/credentials";
-    # This was causing systemd to crash before running preStart.
+    # ADD THIS BACK: It satisfies the module's compiler assertion check.
+    # The activation script below guarantees this path is populated.
+    environmentFile = "/var/lib/atticd/credentials";
 
     settings = {
       listen = "[::]:8080";
@@ -35,8 +36,8 @@
   # ========================================================================
   # System Activation Bootstrapping
   # ========================================================================
-  # NixOS activation scripts run DURING 'nixos-rebuild switch' before systemd
-  # touches the services, guaranteeing the file exists in time.
+  # Runs DURING 'nixos-rebuild switch' before systemd loads the service,
+  # preventing the "Failed to load environmentFile" systemd resource crash.
   system.activationScripts.atticd-secrets-bootstrap = {
     text = ''
       mkdir -p /var/lib/atticd
@@ -48,11 +49,6 @@
       chmod 640 /var/lib/atticd/credentials
     '';
   };
-
-  # ========================================================================
-  # Inject the credentials file safely via systemd environment modification
-  # ========================================================================
-  systemd.services.atticd.serviceConfig.EnvironmentFile = "/var/lib/atticd/credentials";
 
   # ========================================================================
   # Firewall Management
