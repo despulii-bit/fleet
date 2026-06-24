@@ -13,9 +13,9 @@
       # Listen on all interfaces so your LAN VMs can reach it
       listen = "[::]:8080";
 
-      # The URL your VMs will use to pull binaries.
-      # Ensure this matches your Attic VM's actual static LAN IP or local DNS name!
-      endpoint = "http://192.168.1.10:8080";
+      # FIXED: Upstream Attic split 'endpoint' into explicit routing fields
+      api-endpoint = "http://192.168.1.10:8080";
+      substituter-endpoint = "http://192.168.1.10:8080";
 
       # Storage backend configuration (Local Filesystem)
       storage = {
@@ -29,10 +29,12 @@
       };
 
       # Chunking optimization parameters
+      # FIXED: Added required 'nar-size-threshold' parameter as mandated by reference docs
       chunking = {
-        min-size = 16384;  # 16 KB
-        avg-size = 65536;  # 64 KB
-        max-size = 262144; # 256 KB
+        nar-size-threshold = 65536; # 64 KiB threshold to trigger deduplication
+        min-size = 16384;           # 16 KiB
+        avg-size = 65536;           # 64 KiB
+        max-size = 262144;          # 256 KiB
       };
     };
   };

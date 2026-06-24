@@ -1,6 +1,6 @@
 { pkgs, modulesPath, ... }: {
   imports = [
-    ../../shared # <-- This automatically looks for and pulls in shared/default.nix
+    ../../shared
     (modulesPath + "/profiles/qemu-guest.nix")
     ./atticd.nix
   ];
@@ -14,7 +14,9 @@
     fsType = "ext4";
   };
 
-  networking.hostName = "attic-server";
+  # FIXED: Matched to the exact flake output attribute name ".#attic"
+  networking.hostName = "attic";
+
   networking.useDHCP = true;
   networking.firewall.allowedTCPPorts = [ 22 ];
   services.qemuGuest.enable = true;
