@@ -11,11 +11,18 @@
     nixosConfigurations = {
       attic = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        modules = [ ./hosts/attic/configuration.nix ];
+        modules = [
+          ./shared/default.nix          # Loads your base configuration (SSH, Firewall, Keys)
+          ./hosts/attic/configuration.nix # Loads host-specific hardware/settings
+          ./hosts/attic/atticd.nix        # Loads your attic binary cache service
+        ];
       };
       "k3s-control-01" = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        modules = [ ./hosts/k3s/configuration.nix ];
+        modules = [
+          ./shared/default.nix
+          ./hosts/k3s/configuration.nix
+        ];
       };
     };
 
@@ -25,9 +32,20 @@
         nixpkgs = import nixpkgs { system = "x86_64-linux"; };
       };
 
-      # Inherit the host configuration modules directly
-      attic = { ... }: { imports = [ ./hosts/attic/configuration.nix ]; };
-      "k3s-control-01" = { ... }: { imports = [ ./hosts/k3s/configuration.nix ]; };
+      # Mirroring the exact same module files so Colmena and your bootstrap script see the same layout
+      attic = { ... }: {
+        imports = [
+          ./shared/default.nix
+          ./hosts/attic/configuration.nix
+          ./hosts/attic/atticd.nix
+        ];
+      };
+      "k3s-control-01" = { ... }: {
+        imports = [
+          ./shared/default.nix
+          ./hosts/k3s/configuration.nix
+        ];
+      };
     };
   };
 }
