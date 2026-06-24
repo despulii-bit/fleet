@@ -7,7 +7,7 @@
     enable = true;
 
     # File containing the JWT signing secret
-    credentialsFile = "/var/lib/atticd/credentials";
+    environmentFile = "/var/lib/atticd/credentials";
 
     settings = {
       # Listen on all interfaces so your LAN VMs can reach it
