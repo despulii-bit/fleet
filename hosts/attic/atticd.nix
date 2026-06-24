@@ -13,7 +13,7 @@
       # Listen on all interfaces so your LAN VMs can reach it
       listen = "[::]:8080";
 
-      # FIXED: Upstream Attic split 'endpoint' into explicit routing fields
+      # Explicit upstream routing fields
       api-endpoint = "http://192.168.1.10:8080";
       substituter-endpoint = "http://192.168.1.10:8080";
 
@@ -29,7 +29,6 @@
       };
 
       # Chunking optimization parameters
-      # FIXED: Added required 'nar-size-threshold' parameter as mandated by reference docs
       chunking = {
         nar-size-threshold = 65536; # 64 KiB threshold to trigger deduplication
         min-size = 16384;           # 16 KiB
@@ -42,12 +41,17 @@
   # ========================================================================
   # Automated Bootstrap Automation (Pre-seed Secrets)
   # ========================================================================
-  # Automatically creates the storage directory and generates a safe baseline JWT
-  # secret if the node is booting up for the very first time.
-  systemd.tmpfiles.rules = [
-    "d /var/lib/atticd 0750 atticd atticd - -"
-    "f /var/lib/atticd/credentials 0640 atticd atticd - ATTIC_SERVER_TOKEN_HS256_SECRET_BASE64=ZXhhbXBsZS1zZWNyZXQtbW9kaWZ5LXRoaXMtaW4tcHJvZHVjdGlvbi1wbHNa"
-  ];
+  # This runs right before atticd starts, ensuring the directory and baseline
+  # credentials file exist with the correct permissions on the very first boot.
+  systemd.services.atticd.preStart = ''
+    mkdir -p /var/lib/atticd
+    if [ ! -f /var/lib/atticd/credentials ]; then
+      echo "ATTIC_SERVER_TOKEN_HS256_SECRET_BASE64=ZXhhbXBsZS1zZWNyZXQtbW9kaWZ5LXRoaXMtaW4tcHJvZHVjdGlvbi1wbHNa" > /var/lib/atticd/credentials
+    fi
+    chown -R atticd:atticd /var/lib/atticd
+    chmod 750 /var/lib/atticd
+    chmod 640 /var/lib/atticd/credentials
+  '';
 
   # ========================================================================
   # Firewall Management
