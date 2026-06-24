@@ -6,6 +6,8 @@
   services.atticd = {
     enable = true;
 
+    systemd.services.atticd.wantedBy = [ "multi-user.target" ];
+
     # ADD THIS BACK: It satisfies the module's compiler assertion check.
     # The activation script below guarantees this path is populated.
     environmentFile = "/var/lib/atticd/credentials";
